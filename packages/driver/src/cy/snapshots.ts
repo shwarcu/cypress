@@ -14,6 +14,17 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
   const snapshotsMap = new WeakMap()
   const snapshotDocument = new Document()
 
+  const createIframePlaceholder = _.memoize((id, className, style, width, height) => {
+    return $('<iframe />', { id, class: className, style }).css({
+      background: '#f8f8f8',
+      border: 'solid 1px #a3a3a3',
+      boxSizing: 'border-box',
+      padding: '20px',
+      width,
+      height,
+    });
+  }, (...args) => JSON.stringify(args))
+
   const getHtmlAttrs = function (htmlEl) {
     const tmpHtmlEl = document.createElement('html')
 
@@ -80,15 +91,7 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
           return 0
         }
       }
-
-      const $placeholder = $('<iframe />', props).css({
-        background: '#f8f8f8',
-        border: 'solid 1px #a3a3a3',
-        boxSizing: 'border-box',
-        padding: '20px',
-        width: dimensions('outerWidth'),
-        height: dimensions('outerHeight'),
-      }) as JQuery<HTMLIFrameElement>
+      const $placeholder = createIframePlaceholder(props.id, props.class, props.style, dimensions('outerWidth'), dimensions('outerHeight'));
 
       $iframes.eq(idx).replaceWith($placeholder)
       const contents = `\
@@ -319,4 +322,4 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
   }
 }
 
-export interface ISnapshots extends ReturnType<typeof create> {}
+export interface ISnapshots extends ReturnType<typeof create> { }
