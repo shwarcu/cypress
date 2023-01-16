@@ -22,7 +22,7 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
       padding: '20px',
       width,
       height,
-    });
+    })
   }, (...args) => JSON.stringify(args))
 
   const getHtmlAttrs = function (htmlEl) {
@@ -91,7 +91,7 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
           return 0
         }
       }
-      const $placeholder = createIframePlaceholder(props.id, props.class, props.style, dimensions('outerWidth'), dimensions('outerHeight'));
+      const $placeholder = createIframePlaceholder(props.id, props.class, props.style, dimensions('outerWidth'), dimensions('outerHeight'))
 
       $iframes.eq(idx).replaceWith($placeholder)
       const contents = `\
