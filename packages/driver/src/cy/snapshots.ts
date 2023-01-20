@@ -146,6 +146,8 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
   }
 
   const createSnapshotBody = ($elToHighlight) => {
+    let start;
+    let end;
     // create a unique selector for this el
     // but only IF the subject is truly an element. For example
     // we might be wrapping a primitive like "$([1, 2]).first()"
@@ -181,11 +183,14 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
     const { headStyleIds, bodyStyleIds } = snapshotsCss.getStyleIds()
 
     // replaces iframes with placeholders
+    start = performance.now()
     replaceIframes($body)
+    end = performance.now()
 
     // remove tags we don't want in body
     $body.find('script,link[rel=\'stylesheet\'],style').remove()
 
+    console.log('replaceIframes', end-start)
     // here we need to figure out if we're in a remote manual environment
     // if so we need to stringify the DOM:
     // 1. grab all inputs / textareas / options and set their value on the element
