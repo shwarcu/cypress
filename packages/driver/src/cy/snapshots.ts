@@ -13,6 +13,8 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
   const snapshotsCss = createSnapshotsCSS($$, state)
   const snapshotsMap = new WeakMap()
   const snapshotDocument = new Document()
+  const iframePlaceholders = new Map<string, any>();
+
 
   const getHtmlAttrs = function (htmlEl) {
     const tmpHtmlEl = document.createElement('html')
@@ -49,11 +51,21 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
 
     return $$('iframe').each((idx, iframe) => {
       const $iframe = $(iframe)
+      const props = {
+        id: iframe.id,
+        class: iframe.className,
+        style: iframe.style.cssText,
+      }
+      const key = JSON.stringify({ ...props })
+
+      iframePlaceholders.has(key)
+
 
       const remove = () => {
         return $iframes.eq(idx).remove()
       }
 
+  
       // if we don't have access to window
       // then just remove this $iframe...
       try {
@@ -64,31 +76,34 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
         return remove()
       }
 
-      const props = {
-        id: iframe.id,
-        class: iframe.className,
-        style: iframe.style.cssText,
-      }
+      let $placeholder;
 
-      const dimensions = (fn) => {
-        // jquery may throw here if we accidentally
-        // pass an old iframe reference where the
-        // document + window properties are unavailable
-        try {
-          return $iframe[fn]()
-        } catch (e) {
-          return 0
+      if (iframePlaceholders.has(key)) {
+        console.log('placeholder exists, using cached')
+        $placeholder = iframePlaceholders.get(key);
+      } else {
+        console.log('making new placeholder')
+        const dimensions = (fn) => {
+          // jquery may throw here if we accidentally
+          // pass an old iframe reference where the
+          // document + window properties are unavailable
+          try {
+            return $iframe[fn]()
+          } catch (e) {
+            return 0
+          }
         }
-      }
 
-      const $placeholder = $('<iframe />', props).css({
-        background: '#f8f8f8',
-        border: 'solid 1px #a3a3a3',
-        boxSizing: 'border-box',
-        padding: '20px',
-        width: dimensions('outerWidth'),
-        height: dimensions('outerHeight'),
-      }) as JQuery<HTMLIFrameElement>
+        $placeholder = $('<iframe />', props).css({
+          background: '#f8f8f8',
+          border: 'solid 1px #a3a3a3',
+          boxSizing: 'border-box',
+          padding: '20px',
+          width: dimensions('outerWidth'),
+          height: dimensions('outerHeight'),
+        }) as JQuery<HTMLIFrameElement>
+        iframePlaceholders.set(key, $placeholder);
+      }
 
       $iframes.eq(idx).replaceWith($placeholder)
       const contents = `\
@@ -190,7 +205,7 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
     // remove tags we don't want in body
     $body.find('script,link[rel=\'stylesheet\'],style').remove()
 
-    console.log('replaceIframes', end-start)
+    console.log('replaceIframes', end - start)
     // here we need to figure out if we're in a remote manual environment
     // if so we need to stringify the DOM:
     // 1. grab all inputs / textareas / options and set their value on the element
@@ -324,4 +339,4 @@ export const create = ($$: $Cy['$$'], state: StateFunc) => {
   }
 }
 
-export interface ISnapshots extends ReturnType<typeof create> {}
+export interface ISnapshots extends ReturnType<typeof create> { }
